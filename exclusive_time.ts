@@ -41,10 +41,35 @@ function exclusiveTime(n: number, logs: string[]): number[] {
       //   stack[stack.length - 1].timestamp += diff;
       //   console.log(stack);
       // }
-      for (let st of stack) { // Worst case this will become (n/2)^2
+      for (let st of stack) {
+        // Worst case this will become (n/2)^2
         st.timestamp += diff;
       }
     }
+  }
+
+  return result;
+}
+
+function exclusiveTime_optimize(n: number, logs: string[]): number[] {
+  let result: number[] = Array.from({ length: n });
+  result.fill(0);
+  let stack: LogInfo[] = [];
+  let prevTime: number = 0;
+
+  for (const log of logs) {
+    let info = parseLog(log);
+    if (info.isStart) {
+      if (stack.length > 0) {
+        result[stack[stack.length - 1].id] += info.timestamp - prevTime;
+      }
+      stack.push(info);
+    } else {
+      info.timestamp += 1;
+      result[info.id] += info.timestamp - prevTime;
+      stack.pop();
+    }
+    prevTime = info.timestamp;
   }
 
   return result;
@@ -60,6 +85,43 @@ describe("636. Exclusive Time of Functions", () => {
   it("New Logic - 02", () => {
     expect(
       exclusiveTime(1, [
+        "0:start:0",
+        "0:start:1",
+        "0:start:2",
+        "0:end:3",
+        "0:end:4",
+        "0:end:5",
+      ])
+    ).toStrictEqual([6]);
+  });
+
+  it("Optimized Logic - 03", () => {
+    expect(
+      exclusiveTime_optimize(1, [
+        "0:start:0",
+        "0:start:2",
+        "0:end:5",
+        "0:start:6",
+        "0:end:6",
+        "0:end:7",
+      ])
+    ).toStrictEqual([8]);
+  });
+
+  it("Optimized Logic - 01", () => {
+    expect(
+      exclusiveTime_optimize(2, [
+        "0:start:0",
+        "1:start:2",
+        "1:end:5",
+        "0:end:6",
+      ])
+    ).toStrictEqual([3, 4]);
+  });
+
+  it("Optimized Logic - 02", () => {
+    expect(
+      exclusiveTime_optimize(1, [
         "0:start:0",
         "0:start:1",
         "0:start:2",
